@@ -1,49 +1,60 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-export const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [user, setUser] = useState(null);
+export const Login = ({ setLoginDetail, userDetail, allUsers }) => {
+  const [user, setUser] = useState({
+    email: "",
+    password: "",
+  });
   const [error, setError] = useState({});
+  const navigateTo = useNavigate();
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setUser({ ...user, [name]: value });
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     let err = {};
-    if (email === "") {
+    if (user.email === "") {
       err.email = "please provide email";
-    } else if (!email.match(/^[a-zA-Z0–9._-]+@[a-zA-Z0–9.-]+\.[a-zA-Z]{2,}$/)) {
+    } else if (
+      !user.email.match(/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)
+    ) {
       err.email = "provide valid email format";
-    } else {
-      err.email = "";
     }
 
-    if (password === "") {
+    if (user.password === "") {
       err.password = "please provide password";
-    } else {
-      err.password = "";
     }
     setError({ ...err });
 
-    if (err.email === "" && err.password === "") {
-      alert("User Login successfully!");
-      setUser({ email, password });
-      setEmail("");
-      setPassword("");
-      setError({});
+    if (Object.keys(err).length === 0) {
+      const check = allUsers.filter((users) => {
+        return users.email === user.email && users.password === user.password;
+      });
+      if (check.length === 1) {
+        setLoginDetail(check[0]);
+        localStorage.setItem("loginUser", JSON.stringify(check[0]));
+        navigateTo("/login-success");
+      } else {
+        alert("Email or Password does not match!");
+      }
     }
   };
 
   return (
     <div className="form-container">
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} autoComplete="off">
         <h1>Login to your Account</h1>
         <div className="form-control">
           <label htmlFor="email">Email</label>
           <input
             type="text"
+            name="email"
             id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={user.email}
+            onChange={handleChange}
           />
           {error.email && <p>*{error.email}</p>}
         </div>
@@ -51,29 +62,15 @@ export const Login = () => {
           <label htmlFor="pass">Password</label>
           <input
             type="password"
+            name="password"
             id="pass"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={user.password}
+            onChange={handleChange}
           />
           {error.password && <p>*{error.password}</p>}
         </div>
         <button type="submit">Login</button>
       </form>
-      <div>
-        {user !== null && (
-          <>
-            <h3>Login Data:</h3>
-            <ul>
-              <li>
-                <span>Email:</span> {user.email}
-              </li>
-              <li>
-                <span>Password:</span> {user.password}
-              </li>
-            </ul>
-          </>
-        )}
-      </div>
     </div>
   );
 };

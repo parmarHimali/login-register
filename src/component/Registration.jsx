@@ -1,8 +1,8 @@
 import { useState } from "react";
 import "../App.css";
+import { useNavigate } from "react-router-dom";
 
-const Registration = () => {
-  const [userDetail, setUserDetail] = useState(null);
+const Registration = ({ setUserDetail, setAllUsers, allUsers }) => {
   const [user, setUser] = useState({
     name: "",
     email: "",
@@ -14,6 +14,7 @@ const Registration = () => {
     agree: "",
   });
 
+  const navigateTo = useNavigate();
   const [error, setError] = useState({});
   const handleChange = (e) => {
     let name = e.target.name;
@@ -23,84 +24,59 @@ const Registration = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     let err = {};
+    console.log(err);
+
+    if (allUsers.some((users) => users.email == user.email)) {
+      err.email = "Email already exists!";
+    }
+    if (allUsers.some((users) => users.phone == user.phone)) {
+      err.phone = "Phone already exists!";
+    }
 
     if (user.name === "") {
       err.name = "provide a username";
-    } else {
-      err.name = "";
     }
 
     if (user.email === "") {
       err.email = "provide an email address";
     } else if (
-      !/^[a-zA-Z0–9._-]+@[a-zA-Z0–9.-]+\.[a-zA-Z]{2,}$/.test(user.email)
+      !/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(user.email)
     ) {
       err.email = "please provide valid email format";
-    } else {
-      err.email = "";
     }
+
     if (user.phone === "") {
       err.phone = "provide phone number";
     } else if (!/^\d{10}$/.test(user.phone)) {
       err.phone = "provide 10 digits phone number";
-    } else {
-      err.phone = "";
     }
 
     if (user.password === "") {
       err.password = "provide password";
-    } else {
-      err.password = "";
     }
     if (user.cpassword === "") {
       err.cpassword = "provide confirm password";
     } else if (user.password !== user.cpassword) {
       err.cpassword = "password and confirm password didn't match";
-    } else {
-      err.cpassword = "";
     }
     if (user.gender === "") {
       err.gender = "select gender";
-    } else {
-      err.gender = "";
     }
 
     if (user.city === "") {
       err.city = "please select city";
-    } else {
-      err.city = "";
     }
     if (user.agree === "") {
       err.agree = "term&conditions must be accepted before registration";
-    } else {
-      err.agree = "";
     }
     setError({ ...err });
 
-    if (
-      err.name === "" &&
-      err.phone === "" &&
-      err.email === "" &&
-      err.password === "" &&
-      err.cpassword === "" &&
-      err.cpassword === "" &&
-      err.gender === "" &&
-      err.city === "" &&
-      err.agree === ""
-    ) {
+    if (Object.keys(err).length == 0) {
       setUserDetail(user);
+      setAllUsers([...allUsers, user]);
+      localStorage.removeItem("loginUser");
       alert("User registered successfully!");
-      setUser({
-        name: "",
-        email: "",
-        password: "",
-        cpassword: "",
-        phone: "",
-        gender: "",
-        city: "",
-        agree: "",
-      });
-      setError({});
+      navigateTo("/login");
     }
   };
   return (
@@ -209,39 +185,6 @@ const Registration = () => {
         </div>
         <button type="submit">Register</button>
       </form>
-      <div>
-        {userDetail !== null && (
-          <>
-            <h3>Registered Data:</h3>
-            <ul>
-              <li>
-                <span>Name:</span> {userDetail.name}
-              </li>
-              <li>
-                <span>Email:</span> {userDetail.email}
-              </li>
-              <li>
-                <span>Phone:</span> {userDetail.phone}
-              </li>
-              <li>
-                <span>Password:</span> {userDetail.password}
-              </li>
-              <li>
-                <span>Confirm Password:</span> {userDetail.cpassword}
-              </li>
-              <li>
-                <span>Gender:</span> {userDetail.gender}
-              </li>
-              <li>
-                <span>City:</span> {userDetail.city}
-              </li>
-              <li>
-                <span>Agree with terms & conditions:</span> {userDetail.agree}
-              </li>
-            </ul>
-          </>
-        )}
-      </div>
     </div>
   );
 };
